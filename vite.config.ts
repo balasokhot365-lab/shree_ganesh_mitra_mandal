@@ -18,8 +18,9 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
 
       allowedHosts: [
-        'final-sxck.onrender.com',
-        'balganesh-mandal.onrender.com',
+        
+        
+        'shree-ganesh-mitra-mandal.onrender.com',
       ],
     },
   };
