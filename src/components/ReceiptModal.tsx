@@ -210,7 +210,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         receipt.amountInWords || convertNumberToWords(receipt.amount, "mr");
 
       const waText = `🚩 *॥ श्री गणेशाय नमः ॥* 🚩
-*श्री गणेश मित्र मंडळ, शिरसवाडी (कोल्हापूर)*
+*श्री गणेश मित्र मंडळ, शिरसवाडी (सातारा)*
 सार्वजनिक गणेशोत्सव २०२६ - अधिकृत वर्गणी पावती
 
 सस्नेह नमस्कार, *${receipt.donorName}* जी!

@@ -95,7 +95,7 @@ export const UnpaidReceipts: React.FC = () => {
 
   const handleSendReminderWhatsApp = (receipt: IReceipt) => {
     const msg = `🚩 *॥ श्री गणेशाय नमः ॥* 🚩
-*श्री गणेश मित्र मंडळ, शिरसवाडी (कोल्हापूर)*
+*श्री गणेश मित्र मंडळ, शिरसवाडी (सातारा)*
 सार्वजनिक गणेशोत्सव २०२६ - वर्गणी आठवण संदेश
 
 सस्नेह नमस्कार, *${receipt.donorName}*,

@@ -249,8 +249,8 @@ export const translations = {
     singleDeviceNotice: "Security Notice: Single active device session allowed at a time.",
 
     // Receipt Print Header & Text
-    receiptHeaderMandal: "Ekdant Mitra Mandal",
-    receiptHeaderSub: "Unchgaon, Karveer, Kolhapur",
+    receiptHeaderMandal: "Shree Ganesh Mitra Mandal",
+    receiptHeaderSub: "Padmawadi mala , shirasawadi satara",
     receiptTrustTitle: "॥ Shree Ganeshay Namah ॥",
     receiptVarganiPavti: "Sarvajanik Ganeshotsav Vargani Receipt",
     receiptThankYou: "Praying to Lord Ganesha for your prosperity and happiness! Thank you!",

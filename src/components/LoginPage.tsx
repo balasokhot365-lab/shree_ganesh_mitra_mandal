@@ -181,10 +181,10 @@ export const LoginPage: React.FC = () => {
                   सार्वजनिक गणेशोत्सव २०२६
                 </span>
                 <h1 className="text-lg sm:text-2xl font-black text-yellow-300 font-serif tracking-tight mt-1 leading-tight drop-shadow-sm">
-                  श्री गणेश मित्र मंडळ
+                  {t.receiptHeaderMandal}
                 </h1>
                 <p className="text-[11px] sm:text-xs font-semibold text-amber-100 mt-0.5">
-                  पद्मावाडी मळा, शिरसवाडी, सातारा
+                  {t.receiptHeaderSub}
                 </p>
               </div>
 

@@ -403,7 +403,7 @@ export const MandalSeal: React.FC<{ size?: number; className?: string }> = ({
         style={{ color: "#B91C1C" }}
         className="text-[6.5px] font-bold leading-tight mt-0.5"
       >
-        उचगाव (कोल्हापूर)
+        शिरसवाडी (सातारा)
       </span>
       <div
         style={{ backgroundColor: "#991B1B" }}
