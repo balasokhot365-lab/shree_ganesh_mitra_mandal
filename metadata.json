@@ -1,0 +1,6 @@
+{
+  "name": "Shree Ganesh Mitra Mandal Padmawadi mala - Ganpati Management",
+  "description": "Real-time Ganpati Vargani receipt generator, member performance tracker, expense manager with budget protection, and Marathi/English billing system for Shree Ganesh Mitra Mandal Padmawadi mala.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
