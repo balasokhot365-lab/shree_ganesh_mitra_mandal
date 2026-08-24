@@ -87,7 +87,7 @@ export interface IAuditLog {
 // -------------------------------------------------------------
 export function getMandalConfig() {
   return {
-    mandalId: process.env.MANDAL_ID || "BalGanesh_Mandal",
+    mandalId: process.env.MANDAL_ID || "ganesh-mitra-mandal",
     mandalName: process.env.MANDAL_NAME || "श्री गणेश मित्र मंडळ",
     mandalPrefix: process.env.MANDAL_PREFIX || "GMM",
     mandalRegNo: process.env.MANDAL_REG_NO || "महा./१८५/२०२३",
