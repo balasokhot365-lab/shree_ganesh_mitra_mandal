@@ -266,7 +266,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({
                 type="text"
                 value={donorAddress}
                 onChange={(e) => setDonorAddress(e.target.value)}
-                placeholder="उदा. पद्मावाडी मळा, शिरसवाडी, सातारा"
+                placeholder="उदा. शिवाजी चौक, गल्ली नं. २, उचगाव"
                 className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
               />
             </div>

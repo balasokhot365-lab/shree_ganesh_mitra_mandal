@@ -81,7 +81,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const [exportType, setExportType] = useState<string | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [mainAdminName, setMainAdminName] = useState<string>("उद्धव इंगळे");
+  const [mainAdminName, setMainAdminName] = useState<string>("अतुल पाटील");
 
   // 🔑 Single in-flight/most-recent PDF generation promise. Every caller —
   // the background pre-generation effect, the Download button, and the
@@ -168,13 +168,17 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           ? cleanMobile
           : "";
 
+    // Desktop Chrome/Edge technically expose navigator.share/canShare, but
+    // there's no WhatsApp app on the OS for that share sheet to hand a file
+    // to — the call silently no-ops there. Only trust native file-share on
+    // an actual phone/tablet, where it hands the PDF straight to the
+    // WhatsApp app. Everywhere else (desktop), go straight to WhatsApp Web.
     const isMobileDevice =
       typeof navigator !== "undefined" &&
       (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
     const canUseNativeShare =
       isMobileDevice &&
-      !targetPhone &&
       typeof navigator !== "undefined" &&
       !!navigator.share &&
       !!navigator.canShare;
@@ -206,7 +210,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         receipt.amountInWords || convertNumberToWords(receipt.amount, "mr");
 
       const waText = `🚩 *॥ श्री गणेशाय नमः ॥* 🚩
-*श्री गणेश मित्र मंडळ, शिरसवाडी (सातारा)*
+*श्री बाल गणेश मंडळ, उचगाव (कोल्हापूर)*
 सार्वजनिक गणेशोत्सव २०२६ - अधिकृत वर्गणी पावती
 
 सस्नेह नमस्कार, *${receipt.donorName}* जी!
@@ -220,21 +224,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 👤 *जमाकर्ता प्रतिनिधी:* ${receipt.collectedByName || "एकदंत प्रतिनिधी"}
 
 ॥ श्री गणरायाच्या कृपेने आपल्या घरी सुख, समृद्धी, आरोग्य आणि शांती लाभो हीच प्रार्थना! धन्यवाद! ॥
-_श्री गणेश मित्र मंडळ, शिरसवाडी (नोंदणी क्र. महा./१८५/२०२३)_ 🙏`;
+_श्री बाल गणेश मंडळ, उचगाव (नोंदणी क्र. महा./१८५/२०२४)_ 🙏`;
 
       const encodedMsg = encodeURIComponent(waText);
       const waUrl = targetPhone
-        ? isMobileDevice
-          ? `whatsapp://send?phone=${targetPhone}&text=${encodedMsg}`
-          : `https://wa.me/${targetPhone}?text=${encodedMsg}`
+        ? `https://wa.me/${targetPhone}?text=${encodedMsg}`
         : `https://wa.me/?text=${encodedMsg}`;
 
       let sharedDirectly = false;
+
+      // Preferred path (mobile only): hand the actual PDF file to the OS
+      // share sheet. This is the ONLY way a web page can make WhatsApp
+      // receive a real attached file (image or PDF) instead of just a text
+      // message — a wa.me link can prefill text for a specific number, but
+      // it cannot pre-attach a file (that's a WhatsApp/OS restriction, not
+      // something fixable in this app's code).
       if (canUseNativeShare) {
         try {
           const file = new File([blob], fileName, {
             type: "application/pdf",
           });
+          console.log("canShare(file)?", navigator.canShare({ files: [file] }));
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
               title: `एकदंत मंडळ पावती क्र. ${receipt.receiptNo}`,
@@ -256,7 +266,20 @@ _श्री गणेश मित्र मंडळ, शिरसवाड�
         }
       }
 
+      // Fallback (desktop, and any mobile browser without file-sharing
+      // support): copy the receipt as an IMAGE to the clipboard so it can
+      // be pasted (Ctrl+V) straight into the WhatsApp Web chat box — that
+      // actually sends the visual receipt, not just text. The clipboard
+      // write must happen while THIS tab still has focus, so it runs
+      // before we open the WhatsApp Web tab (opening a new tab shifts
+      // browser focus away and silently breaks the clipboard write if done
+      // after). A PDF copy is also downloaded as a saved record.
       if (!sharedDirectly) {
+        console.log(
+          "Clipboard API available?",
+          typeof ClipboardItem !== "undefined",
+          !!navigator.clipboard?.write,
+        );
         let imageCopied = false;
         try {
           if (
@@ -294,12 +317,10 @@ _श्री गणेश मित्र मंडळ, शिरसवाड�
         }
 
         showToast(
-          targetPhone
-            ? imageCopied
-              ? `🖼️ +${targetPhone} चा चॅट उघडला! फोटो क्लिपबोर्डवर कॉपी झाला आहे — Ctrl+V दाबून पेस्ट करा व पाठवा.`
-              : `📄 +${targetPhone} चा व्हॉट्सॲप चॅट उघडला व PDF डाऊनलोड झाली! कृपया 📎 ने PDF जोडा.`
-            : imageCopied
-              ? `🖼️ पावतीचा फोटो क्लिपबोर्डवर कॉपी झाला! व्हॉट्सॲप चॅटमध्ये Ctrl+V दाबून पेस्ट करा व पाठवा.`
+          imageCopied
+            ? `🖼️ पावतीचा फोटो क्लिपबोर्डवर कॉपी झाला! व्हॉट्सॲप चॅटमध्ये Ctrl+V दाबून पेस्ट करा व पाठवा.`
+            : targetPhone
+              ? `📄 पावती PDF डाऊनलोड झाली व मो. +${targetPhone} साठी व्हॉट्सॲप उघडले! कृपया 📎 ने PDF जोडा.`
               : `📄 पावती PDF डाऊनलोड झाली व व्हॉट्सॲप उघडले! नंबर निवडून 📎 ने PDF जोडा.`,
         );
       }
@@ -445,7 +466,7 @@ _श्री गणेश मित्र मंडळ, शिरसवाड�
                     ? "bg-emerald-50 text-emerald-800 border-emerald-200"
                     : "bg-amber-50 text-amber-800 border-amber-200"
                 }`}
-                title="पावती स्थिती बदलण्याचा अधिकार फक्त मुख्य अध्यक्ष उद्धव इंगळे यांना आहे"
+                title="पावती स्थिती बदलण्याचा अधिकार फक्त मुख्य अध्यक्ष अतुल पाटील यांना आहे"
               >
                 <Lock className="w-3 h-3 text-stone-400" />
                 <span>
