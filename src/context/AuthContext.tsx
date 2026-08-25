@@ -72,9 +72,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(null);
     };
 
-    window.addEventListener("ekdant_session_expired", handleSessionExpired);
+    window.addEventListener("ganesh_session_expired", handleSessionExpired);
     return () => {
-      window.removeEventListener("ekdant_session_expired", handleSessionExpired);
+      window.removeEventListener("ganesh_session_expired", handleSessionExpired);
     };
   }, [refreshUser]);
 

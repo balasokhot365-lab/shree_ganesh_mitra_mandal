@@ -62,7 +62,7 @@ export const FinancialReports: React.FC = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Ekdant_Mandal_Receipts_${Date.now()}.csv`;
+    a.download = `ganesh-mitra-mandal_Receipts_${Date.now()}.csv`;
     a.click();
   };
 
@@ -79,7 +79,7 @@ export const FinancialReports: React.FC = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Ekdant_Mandal_Expenses_${Date.now()}.csv`;
+    a.download = `ganesh-mitra-mandal_Expenses_${Date.now()}.csv`;
     a.click();
   };
 

@@ -3,27 +3,27 @@ import { IUser, IReceipt, IExpense, IDashboardStats, IAuditLog, IMandalInfo } fr
 const API_BASE = "/api";
 
 export function getStoredToken(): string | null {
-  return localStorage.getItem("ekdant_session_token");
+  return localStorage.getItem("ganesh_session_token");
 }
 
 export function getStoredUserId(): string | null {
-  return localStorage.getItem("ekdant_user_id");
+  return localStorage.getItem("ganesh_user_id");
 }
 
 export function saveSession(token: string, user: IUser) {
-  localStorage.setItem("ekdant_session_token", token);
-  localStorage.setItem("ekdant_user_id", user._id || user.mobile);
-  localStorage.setItem("ekdant_user_obj", JSON.stringify(user));
+  localStorage.setItem("ganesh_session_token", token);
+  localStorage.setItem("ganesh_user_id", user._id || user.mobile);
+  localStorage.setItem("ganesh_user_obj", JSON.stringify(user));
 }
 
 export function clearSession() {
-  localStorage.removeItem("ekdant_session_token");
-  localStorage.removeItem("ekdant_user_id");
-  localStorage.removeItem("ekdant_user_obj");
+  localStorage.removeItem("ganesh_session_token");
+  localStorage.removeItem("ganesh_user_id");
+  localStorage.removeItem("ganesh_user_obj");
 }
 
 export function getStoredUser(): IUser | null {
-  const data = localStorage.getItem("ekdant_user_obj");
+  const data = localStorage.getItem("ganesh_user_obj");
   if (!data) return null;
   try {
     return JSON.parse(data);
@@ -58,7 +58,7 @@ async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<an
   if (!res.ok) {
     if (res.status === 401 && (data.code === "SESSION_SUPERSEDED" || data.code === "SESSION_EXPIRED")) {
       clearSession();
-      window.dispatchEvent(new CustomEvent("ekdant_session_expired", { detail: data.error }));
+      window.dispatchEvent(new CustomEvent("ganesh_session_expired", { detail: data.error }));
     }
     throw new Error(data.error || "Request failed");
   }

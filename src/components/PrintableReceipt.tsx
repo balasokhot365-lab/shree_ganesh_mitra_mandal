@@ -482,7 +482,7 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
               मुख्य अध्यक्ष
             </span>
             <span style={{ color: "#78716C" }} className="text-[8px]">
-              (Ekdant Mandal)
+              (Ganesh Mandal)
             </span>
           </div>
         </div>
