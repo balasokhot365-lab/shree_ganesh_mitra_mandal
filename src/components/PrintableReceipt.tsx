@@ -154,7 +154,8 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
             style={{ color: "#78350F" }}
             className="text-xs sm:text-sm font-extrabold"
           >
-            {mandalInfo.location}
+            {/* {mandalInfo.location} */}
+            पद्मावती मळा,शिरसवडी , सातारा
           </p>
           <div
             style={{
