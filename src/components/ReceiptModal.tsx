@@ -155,8 +155,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
     setTimeout(() => setToastMessage(null), 5000);
   };
 
-  // 1. WhatsApp Functionality: Share the actual PDF (not a text message) to
-  // the recipient's WhatsApp number.
+  // 1. WhatsApp Functionality: Send directly to the recipient's WhatsApp number & share PDF
   const handleWhatsAppShare = async () => {
     if (!receipt || isExporting) return;
 
@@ -168,11 +167,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           ? cleanMobile
           : "";
 
-    // Desktop Chrome/Edge technically expose navigator.share/canShare, but
-    // there's no WhatsApp app on the OS for that share sheet to hand a file
-    // to — the call silently no-ops there. Only trust native file-share on
-    // an actual phone/tablet, where it hands the PDF straight to the
-    // WhatsApp app. Everywhere else (desktop), go straight to WhatsApp Web.
+    // Check for native mobile share capabilities
     const isMobileDevice =
       typeof navigator !== "undefined" &&
       (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
@@ -233,10 +228,7 @@ _श्री गणेश मित्र मंडळ, शिरसवडी  
 
       let sharedDirectly = false;
 
-      // Preferred path (mobile only): hand the actual PDF file to the OS
-      // share sheet. This is the ONLY way a web page can make WhatsApp
-      // receive a real attached file (image or PDF) instead of just a text
-      // message.
+      // Mobile share sheet when available
       if (canUseNativeShare) {
         try {
           const file = new File([blob], fileName, {
@@ -286,13 +278,12 @@ _श्री गणेश मित्र मंडळ, शिरसवडी  
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(link.href);
+        setTimeout(() => URL.revokeObjectURL(link.href), 1000);
 
         const waWindow = window.open(waUrl, "_blank");
         if (!waWindow) {
-          showToast(
-            "⚠️ Popup blocked! ब्राउझर सेटिंग्जमध्ये पॉपअप्सना परवानगी द्या.",
-          );
+          // Fallback if popup blocked
+          window.location.href = waUrl;
         }
 
         showToast(
@@ -306,8 +297,8 @@ _श्री गणेश मित्र मंडळ, शिरसवडी  
     } catch (err: any) {
       console.error("WhatsApp share error:", err);
       const url = targetPhone
-        ? `https://wa.me/${targetPhone}`
-        : "https://wa.me/";
+        ? `https://api.whatsapp.com/send/?phone=${targetPhone}`
+        : "https://api.whatsapp.com/send/";
       window.open(url, "_blank");
       showToast(`❌ शेअर करताना अडचण आली: ${err?.message || "अज्ञात त्रुटी"}`);
     } finally {
@@ -333,7 +324,7 @@ _श्री गणेश मित्र मंडळ, शिरसवडी  
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
       showToast(`✅ पावती PDF यशस्वीरित्या डाऊनलोड झाली! (${fileName})`);
     } catch (err) {
       console.error("PDF generation failed:", err);

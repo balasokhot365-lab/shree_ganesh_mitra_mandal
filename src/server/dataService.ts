@@ -92,7 +92,7 @@ export function getMandalConfig() {
     mandalName: process.env.MANDAL_NAME || "श्री गणेश मित्र मंडळ",
     mandalPrefix: process.env.MANDAL_PREFIX || "GMM",
     mandalRegNo: process.env.MANDAL_REG_NO || "महा./१८५/२०२३",
-    mandalLocation: process.env.MANDAL_LOCATION || "पद्मावाडी मळा, शिरसवाडी, सातारा",
+    mandalLocation: process.env.MANDAL_LOCATION || "पद्मावती मळा,शिरसवडी , सातारा",
     mainAdminName: process.env.MAIN_ADMIN_NAME || "उद्धव इंगळे",
     mainAdminMobile: process.env.MAIN_ADMIN_MOBILE || "8275658844",
     mainAdminPassword: process.env.MAIN_ADMIN_PASSWORD || "Akash@#ganpati55_39",

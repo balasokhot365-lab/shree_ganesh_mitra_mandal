@@ -20,7 +20,7 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
   const [mandalInfo, setMandalInfo] = useState<IMandalInfo>({
     mandalName: "श्री गणेश मित्र मंडळ",
     regNo: "धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा",
-    location: "पद्मावती मळा, शिरसवाडी, सातारा",
+    location: "पद्मावती मळा,शिरसवडी , सातारा",
     mainAdminName: propMainAdminName || "उद्धव इंगळे",
     mainAdminMobile: "8275658844",
     mainAdminRole: "मुख्य अध्यक्ष",

@@ -100,9 +100,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           <GaneshaIcon size={240} />
         </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center space-x-4">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-1 bg-gradient-to-tr from-amber-300 via-yellow-400 to-amber-600 shadow-lg border-2 border-amber-300/80 shrink-0 overflow-hidden flex items-center justify-center">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+          <div className="flex items-center space-x-3 sm:space-x-4 min-w-0">
+            <div className="relative w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full p-0.5 sm:p-1 bg-gradient-to-tr from-amber-300 via-yellow-400 to-amber-600 shadow-lg border-2 border-amber-300/80 shrink-0 overflow-hidden flex items-center justify-center">
               <img
                 src={
                   new URL("../assets/images/mandal-logo.jpg", import.meta.url)
@@ -116,16 +116,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 }}
               />
             </div>
-            <div>
-              <div className="flex items-center space-x-2 text-amber-300 text-xs font-bold uppercase tracking-wider">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1 text-amber-300 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                 <span>॥ श्री गणेशाय नमः ॥</span>
-                <span>•</span>
-                <span>सार्वजनिक गणेशोत्सव २०२६</span>
+                <span className="hidden xs:inline">•</span>
+                <span className="text-amber-200">सार्वजनिक गणेशोत्सव २०२६</span>
               </div>
-              <h1 className="text-xl sm:text-3xl font-black font-serif text-white tracking-tight mt-1">
+              <h1 className="text-lg sm:text-2xl md:text-3xl font-black font-serif text-white tracking-tight mt-0.5 sm:mt-1 leading-tight">
                 {t.mandalName}
               </h1>
-              <p className="text-xs sm:text-sm text-amber-200 mt-1 flex items-center space-x-2">
+              <p className="text-[11px] sm:text-sm text-amber-200/90 mt-0.5 sm:mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <span>📍 {t.mandalLocation}</span>
                 <span>•</span>
                 <span>{t.regNo}</span>
@@ -133,7 +133,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0">
             <button
               onClick={() => setActiveTab("new_receipt")}
               className="bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-md active:scale-95 transition-all flex items-center space-x-1.5 cursor-pointer"

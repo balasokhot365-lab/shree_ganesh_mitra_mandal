@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { api } from "../services/api";
-import { IReceipt, PaymentMode, PaymentStatus, getUserDesignation,} from "../types";
+import {
+  IReceipt,
+  PaymentMode,
+  PaymentStatus,
+  getUserDesignation,
+} from "../types";
 import { convertNumberToWords } from "../locales/translations";
 import { ReceiptModal } from "./ReceiptModal";
 import {
@@ -262,7 +267,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({
                 type="text"
                 value={donorAddress}
                 onChange={(e) => setDonorAddress(e.target.value)}
-                placeholder="उदा. शिवाजी चौक, गल्ली नं. २, शिरसवाडी"
+                placeholder="उदा. शिवाजी चौक, गल्ली नं. २,शिरसवडी "
                 className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all"
               />
             </div>

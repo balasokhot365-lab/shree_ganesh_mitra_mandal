@@ -35,7 +35,7 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col text-stone-900 font-sans antialiased">
+    <div className="min-h-screen bg-stone-100 flex flex-col text-stone-900 font-sans antialiased w-full max-w-full overflow-x-hidden">
       {/* Sidebar Navigation */}
       <Sidebar
         activeTab={activeTab}
@@ -45,10 +45,10 @@ const MainLayout: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <div className="lg:pl-72 flex flex-col min-h-screen transition-all">
+      <div className="lg:pl-72 flex flex-col min-h-screen transition-all w-full max-w-full overflow-x-hidden">
         <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto overflow-x-hidden">
           {activeTab === "dashboard" && (
             <Dashboard setActiveTab={setActiveTab} />
           )}
