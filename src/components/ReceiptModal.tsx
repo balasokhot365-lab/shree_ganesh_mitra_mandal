@@ -210,7 +210,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         receipt.amountInWords || convertNumberToWords(receipt.amount, "mr");
 
       const waText = `🚩 *॥ श्री गणेशाय नमः ॥* 🚩
-*श्री बाल गणेश मंडळ, उचगाव (कोल्हापूर)*
+*श्री गणेश मित्र मंडळ, शिरसवडी  (सातारा)*
 सार्वजनिक गणेशोत्सव २०२६ - अधिकृत वर्गणी पावती
 
 सस्नेह नमस्कार, *${receipt.donorName}* जी!
@@ -224,7 +224,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 👤 *जमाकर्ता प्रतिनिधी:* ${receipt.collectedByName || "एकदंत प्रतिनिधी"}
 
 ॥ श्री गणरायाच्या कृपेने आपल्या घरी सुख, समृद्धी, आरोग्य आणि शांती लाभो हीच प्रार्थना! धन्यवाद! ॥
-_श्री बाल गणेश मंडळ, उचगाव (नोंदणी क्र. महा./१८५/२०२४)_ 🙏`;
+_श्री गणेश मित्र मंडळ, शिरसवडी  (धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा)_ 🙏`;
 
       const encodedMsg = encodeURIComponent(waText);
       const waUrl = targetPhone

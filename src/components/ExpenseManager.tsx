@@ -625,7 +625,7 @@ export const ExpenseManager: React.FC = () => {
                   ॥ श्री गणेशाय नमः ॥
                 </div>
                 <h4 className="font-serif font-black text-base text-amber-950">
-                  श्री गणेश मित्र मंडळ, शिरसवाडी
+                  श्री गणेश मित्र मंडळ, शिरसवडी
                 </h4>
                 <div className="text-[10px] text-stone-600">
                   खर्च व्हाउचर (Expense Payment Voucher)

@@ -95,7 +95,7 @@ export const UnpaidReceipts: React.FC = () => {
 
   const handleSendReminderWhatsApp = (receipt: IReceipt) => {
     const msg = `🚩 *॥ श्री गणेशाय नमः ॥* 🚩
-*श्री गणेश मित्र मंडळ, शिरसवाडी (सातारा)*
+*श्री गणेश मित्र मंडळ, शिरसवडी  (सातारा)*
 सार्वजनिक गणेशोत्सव २०२६ - वर्गणी आठवण संदेश
 
 सस्नेह नमस्कार, *${receipt.donorName}*,
@@ -103,7 +103,7 @@ export const UnpaidReceipts: React.FC = () => {
 
 उत्सवाच्या चांगल्या नियोजनासाठी कृपया आपली वर्गणी मंडळाच्या कार्यकर्त्यांकडे जमा करावी ही नम्र विनंती.
 
-_आपले नम्र: श्री गणेश मित्र मंडळ, शिरसवाडी_ 🙏`;
+_आपले नम्र: श्री गणेश मित्र मंडळ, शिरसवडी _ 🙏`;
 
     const encoded = encodeURIComponent(msg);
     const cleanMobile = receipt.donorMobile.replace(/\D/g, "");

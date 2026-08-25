@@ -63,11 +63,12 @@ const MainLayout: React.FC = () => {
         {/* Footer */}
         <footer className="bg-white border-t border-stone-200 py-3 px-4 sm:px-6 text-center text-xs text-stone-500 flex flex-col sm:flex-row items-center justify-between gap-2 lg:pl-8">
           <div>
-            🚩 <strong>श्री गणेश मित्र मंडळ, शिरसवाडी</strong> (सातारा) •
+            🚩 <strong>श्री गणेश मित्र मंडळ, शिरसवडी </strong> (सातारा) •
             सार्वजनिक गणेशोत्सव २०२६
           </div>
           <div className="text-[11px] text-stone-400 font-mono">
-            नोंदणी क्र. महा./१८५/२०२३ • MongoDB Real-Time Sync
+            नोंदणी क्र. धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र /
+            15416 / सातारा • MongoDB Real-Time Sync
           </div>
         </footer>
       </div>

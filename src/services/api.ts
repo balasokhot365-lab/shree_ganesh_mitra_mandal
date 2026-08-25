@@ -117,8 +117,8 @@ export const api = {
       }
       return {
         mandalName: "श्री गणेश मित्र मंडळ",
-        regNo: "महा./१८५/२०२३",
-        location: "पद्मावाडी मळा, शिरसवाडी, सातारा",
+        regNo: "धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा",
+        location: "पद्मावती मळा, शिरसवडी , सातारा",
         mainAdminName: "उद्धव इंगळे",
         mainAdminMobile: "8275658844",
         mainAdminRole: "मुख्य अध्यक्ष",
@@ -126,8 +126,8 @@ export const api = {
     } catch {
       return {
         mandalName: "श्री गणेश मित्र मंडळ",
-        regNo: "महा./१८५/२०२३",
-        location: "पद्मावाडी मळा, शिरसवाडी, सातारा",
+        regNo: "धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा",
+        location: "पद्मावती मळा, शिरसवडी , सातारा",
         mainAdminName: "उद्धव इंगळे",
         mainAdminMobile: "8275658844",
         mainAdminRole: "मुख्य अध्यक्ष",

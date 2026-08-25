@@ -109,7 +109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 श्री गणेश मित्र मंडळ
               </h2>
               <div className="text-[10px] text-amber-200">
-                शिरसवाडी सातारा (२०२६)
+                शिरसवडी सातारा (२०२६)
               </div>
             </div>
           </div>

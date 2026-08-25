@@ -3,10 +3,10 @@ export type Language = "mr" | "en";
 export const translations = {
   mr: {
     // App Header & Mandal Info
-    mandalName: "श्री गणेश मित्र मंडळ, शिरसवाडी",
+    mandalName: "श्री गणेश मित्र मंडळ, शिरसवडी ",
     mandalTagline: "॥ श्री गणेशाय नमः ॥ सार्वजनिक गणेशोत्सव उत्सव",
-    mandalLocation: "शिरसवाडी, सातारा (महाराष्ट्र)",
-    regNo: "नोंदणी क्र. महा./१८५/२०२३",
+    mandalLocation: "शिरसवडी , सातारा (महाराष्ट्र)",
+    regNo: "नोंदणी क्र. धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा",
     liveDbConnected: "MongoDB कनेक्टेड (रिअल टाईम)",
     liveDbDisconnected: "स्थानिक मोड",
 
@@ -112,7 +112,7 @@ export const translations = {
 
     // Login Form
     loginTitle: "मंडळ व्यवस्थापन लॉगिन",
-    loginSubtitle: "श्री गणेश मित्र मंडळ, शिरसवाडी गणेशोत्सव प्रणाली",
+    loginSubtitle: "श्री गणेश मित्र मंडळ, शिरसवडी  गणेशोत्सव प्रणाली",
     mobileLabel: "नोंदणीकृत मोबाईल नंबर",
     passwordLabel: "पासवर्ड",
     loginBtn: "लॉगिन करा",
@@ -121,7 +121,7 @@ export const translations = {
 
     // Receipt Print Header & Text
     receiptHeaderMandal: "श्री गणेश मित्र मंडळ",
-    receiptHeaderSub: "पद्मावाडी मळा, शिरसवाडी, सातारा",
+    receiptHeaderSub: "पद्मावती मळा, शिरसवडी , सातारा",
     receiptTrustTitle: "॥ श्री गणेशाय नमः ॥",
     receiptVarganiPavti: "सार्वजनिक गणेशोत्सव वर्गणी पावती",
     receiptThankYou: "श्री गणरायाच्या चरणी आपल्या सुख-समृद्धीची प्रार्थना! आपले मनःपूर्वक आभार!",
