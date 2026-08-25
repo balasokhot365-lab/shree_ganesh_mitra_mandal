@@ -168,17 +168,13 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           ? cleanMobile
           : "";
 
-    // Desktop Chrome/Edge technically expose navigator.share/canShare, but
-    // there's no WhatsApp app on the OS for that share sheet to hand a file
-    // to — the call silently no-ops there. Only trust native file-share on
-    // an actual phone/tablet, where it hands the PDF straight to the
-    // WhatsApp app. Everywhere else (desktop), go straight to WhatsApp Web.
     const isMobileDevice =
       typeof navigator !== "undefined" &&
       (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
     const canUseNativeShare =
       isMobileDevice &&
+      !targetPhone &&
       typeof navigator !== "undefined" &&
       !!navigator.share &&
       !!navigator.canShare;
@@ -228,23 +224,17 @@ _श्री गणेश मित्र मंडळ, शिरसवाड�
 
       const encodedMsg = encodeURIComponent(waText);
       const waUrl = targetPhone
-        ? `https://wa.me/${targetPhone}?text=${encodedMsg}`
+        ? isMobileDevice
+          ? `whatsapp://send?phone=${targetPhone}&text=${encodedMsg}`
+          : `https://wa.me/${targetPhone}?text=${encodedMsg}`
         : `https://wa.me/?text=${encodedMsg}`;
 
       let sharedDirectly = false;
-
-      // Preferred path (mobile only): hand the actual PDF file to the OS
-      // share sheet. This is the ONLY way a web page can make WhatsApp
-      // receive a real attached file (image or PDF) instead of just a text
-      // message — a wa.me link can prefill text for a specific number, but
-      // it cannot pre-attach a file (that's a WhatsApp/OS restriction, not
-      // something fixable in this app's code).
       if (canUseNativeShare) {
         try {
           const file = new File([blob], fileName, {
             type: "application/pdf",
           });
-          console.log("canShare(file)?", navigator.canShare({ files: [file] }));
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
               title: `एकदंत मंडळ पावती क्र. ${receipt.receiptNo}`,
@@ -266,20 +256,7 @@ _श्री गणेश मित्र मंडळ, शिरसवाड�
         }
       }
 
-      // Fallback (desktop, and any mobile browser without file-sharing
-      // support): copy the receipt as an IMAGE to the clipboard so it can
-      // be pasted (Ctrl+V) straight into the WhatsApp Web chat box — that
-      // actually sends the visual receipt, not just text. The clipboard
-      // write must happen while THIS tab still has focus, so it runs
-      // before we open the WhatsApp Web tab (opening a new tab shifts
-      // browser focus away and silently breaks the clipboard write if done
-      // after). A PDF copy is also downloaded as a saved record.
       if (!sharedDirectly) {
-        console.log(
-          "Clipboard API available?",
-          typeof ClipboardItem !== "undefined",
-          !!navigator.clipboard?.write,
-        );
         let imageCopied = false;
         try {
           if (
@@ -317,10 +294,12 @@ _श्री गणेश मित्र मंडळ, शिरसवाड�
         }
 
         showToast(
-          imageCopied
-            ? `🖼️ पावतीचा फोटो क्लिपबोर्डवर कॉपी झाला! व्हॉट्सॲप चॅटमध्ये Ctrl+V दाबून पेस्ट करा व पाठवा.`
-            : targetPhone
-              ? `📄 पावती PDF डाऊनलोड झाली व मो. +${targetPhone} साठी व्हॉट्सॲप उघडले! कृपया 📎 ने PDF जोडा.`
+          targetPhone
+            ? imageCopied
+              ? `🖼️ +${targetPhone} चा चॅट उघडला! फोटो क्लिपबोर्डवर कॉपी झाला आहे — Ctrl+V दाबून पेस्ट करा व पाठवा.`
+              : `📄 +${targetPhone} चा व्हॉट्सॲप चॅट उघडला व PDF डाऊनलोड झाली! कृपया 📎 ने PDF जोडा.`
+            : imageCopied
+              ? `🖼️ पावतीचा फोटो क्लिपबोर्डवर कॉपी झाला! व्हॉट्सॲप चॅटमध्ये Ctrl+V दाबून पेस्ट करा व पाठवा.`
               : `📄 पावती PDF डाऊनलोड झाली व व्हॉट्सॲप उघडले! नंबर निवडून 📎 ने PDF जोडा.`,
         );
       }
