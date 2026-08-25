@@ -270,7 +270,7 @@ app.post("/api/users", authenticateUser, async (req, res) => {
       return res.status(403).json({ error: "Only Admins can add new members/karyakartas." });
     }
 
-    const { name, mobile, password, role, canManageExpenses, canCreateAdmin, canUpdateReceiptStatus, isActive } = req.body;
+    const { name, mobile, password, role, designation, canManageExpenses, canCreateAdmin, canUpdateReceiptStatus, isActive } = req.body;
     if (!name || !mobile || !password) {
       return res.status(400).json({ error: "Name, mobile, and password are required" });
     }
@@ -280,11 +280,17 @@ app.post("/api/users", authenticateUser, async (req, res) => {
       return res.status(400).json({ error: "हा मोबाईल नंबर आधीच नोंदणीकृत आहे (User with this mobile already exists)" });
     }
 
+    const userDesignation = designation ? designation.trim() : (role === "admin" ? "अध्यक्ष" : "कार्यकर्ता");
+    if (userDesignation === "मुख्य अध्यक्ष") {
+      return res.status(400).json({ error: "मंडळात मुख्य अध्यक्ष हे १ च पद असू शकते. इतर सदस्यांना हे पद देता येणार नाही." });
+    }
+
     const created = await createUser({
       name: name.trim(),
       mobile: mobile.trim(),
       password: password.trim(),
       role: role === "admin" ? "admin" : "karyakarta",
+      designation: userDesignation,
       isMainAdmin: false,
       canUpdateReceiptStatus: role === "admin" ? true : !!canUpdateReceiptStatus,
       canManageExpenses: !!canManageExpenses || role === "admin",
@@ -295,10 +301,10 @@ app.post("/api/users", authenticateUser, async (req, res) => {
 
     await logAudit({
       action: "CREATE_USER",
-      details: `नवीन सदस्य जोडला: ${created.name} (${created.role === "admin" ? "अध्यक्ष" : "कार्यकर्ता"}, मो. ${created.mobile}) द्वारे ${currentUser.name}`,
+      details: `नवीन सदस्य जोडला: ${created.name} (${created.designation || (created.role === "admin" ? "अध्यक्ष" : "कार्यकर्ता")}, मो. ${created.mobile}) द्वारे ${currentUser.name}`,
       performedByUserId: currentUser._id || currentUser.mobile,
       performedByName: currentUser.name,
-      performedByRole: currentUser.role,
+      performedByRole: currentUser.designation || currentUser.role,
     });
 
     const clean = { ...created };
@@ -324,6 +330,13 @@ app.put("/api/users/:id", authenticateUser, async (req, res) => {
     }
 
     const updates = { ...req.body };
+    if (updates.designation) {
+      updates.designation = updates.designation.trim();
+    }
+    // Only Main Admin can have designation "मुख्य अध्यक्ष"
+    if (updates.designation === "मुख्य अध्यक्ष" && !targetUser.isMainAdmin && targetUser.mobile !== config.mainAdminMobile) {
+      return res.status(400).json({ error: "मंडळात मुख्य अध्यक्ष हे १ च पद असू शकते. इतर सदस्यांना हे पद देता येणार नाही." });
+    }
     // Protect Main Admin
     if (targetUser.isMainAdmin || targetUser.mobile === config.mainAdminMobile) {
       updates.role = "admin";
@@ -332,16 +345,19 @@ app.put("/api/users/:id", authenticateUser, async (req, res) => {
       updates.canUpdateReceiptStatus = true;
       updates.canManageExpenses = true;
       updates.canCreateAdmin = true;
+      if (!updates.designation) {
+        updates.designation = "मुख्य अध्यक्ष";
+      }
     }
 
     const updated = await updateUser(targetId, updates);
 
     await logAudit({
       action: "UPDATE_USER",
-      details: `सदस्य अधिकार/माहिती बदलली: ${targetUser.name} द्वारे ${currentUser.name} (Status Authority: ${updates.canUpdateReceiptStatus ? 'होय' : 'नाही'}, Expense: ${updates.canManageExpenses ? 'होय' : 'नाही'})`,
+      details: `सदस्य माहिती/पद बदलले: ${targetUser.name} (${updates.designation || targetUser.designation || targetUser.role}) द्वारे ${currentUser.name}`,
       performedByUserId: currentUser._id || currentUser.mobile,
       performedByName: currentUser.name,
-      performedByRole: currentUser.role,
+      performedByRole: currentUser.designation || currentUser.role,
     });
 
     const clean = { ...updated };
@@ -356,8 +372,8 @@ app.delete("/api/users/:id", authenticateUser, async (req, res) => {
   try {
     const config = getMandalConfig();
     const currentUser = (req as any).user as IUser;
-    if (currentUser.role !== "admin") {
-      return res.status(403).json({ error: "Only Admins can delete members." });
+    if (!currentUser.isMainAdmin && currentUser.mobile !== config.mainAdminMobile) {
+      return res.status(403).json({ error: "फक्त मुख्य अध्यक्षच (Chief President) सदस्यांना डिलीट करू शकतात. इतर कोणालाही सदस्य हटवण्याची परवानगी नाही." });
     }
 
     const targetId = req.params.id;
@@ -366,18 +382,18 @@ app.delete("/api/users/:id", authenticateUser, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (targetUser.isMainAdmin || targetUser.mobile === config.mainAdminMobile) {
-      return res.status(400).json({ error: `मुख्य अध्यक्ष ${config.mainAdminName} (${config.mainAdminMobile}) डिलीट करता येणार नाही (Main Admin cannot be deleted)!` });
+    if (targetUser.isMainAdmin || targetUser.mobile === config.mainAdminMobile || targetUser.designation === "मुख्य अध्यक्ष") {
+      return res.status(400).json({ error: `मुख्य अध्यक्ष ${config.mainAdminName} डिलीट करता येणार नाही (Main Admin cannot be deleted)!` });
     }
 
     await deleteUser(targetId);
 
     await logAudit({
       action: "DELETE_USER",
-      details: `सदस्य हटवला: ${targetUser.name} (${targetUser.mobile}) द्वारे ${currentUser.name}`,
+      details: `सदस्य हटवला: ${targetUser.name} (${targetUser.designation || targetUser.role}, ${targetUser.mobile}) द्वारे मुख्य अध्यक्ष ${currentUser.name}`,
       performedByUserId: currentUser._id || currentUser.mobile,
       performedByName: currentUser.name,
-      performedByRole: currentUser.role,
+      performedByRole: "मुख्य अध्यक्ष",
     });
 
     res.json({ success: true, message: "User deleted successfully" });
@@ -483,7 +499,9 @@ app.post("/api/receipts", authenticateUser, async (req, res) => {
       paymentStatus: paymentStatus === "unpaid" ? "unpaid" : "paid",
       collectedByUserId: currentUser._id || currentUser.mobile,
       collectedByName: currentUser.name,
-      collectedByRole: currentUser.role,
+      collectedByRole:
+        currentUser.designation ||
+        (currentUser.isMainAdmin ? "मुख्य अध्यक्ष" : currentUser.role === "admin" ? "अध्यक्ष" : "कार्यकर्ता"),
       notes: (notes || "").trim(),
     });
 

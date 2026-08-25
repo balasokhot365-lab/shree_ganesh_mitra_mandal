@@ -1,11 +1,26 @@
 export type UserRole = "admin" | "karyakarta";
 
+export const STANDARD_DESIGNATIONS = [
+  "मुख्य अध्यक्ष",
+  "अध्यक्ष",
+  "उपाध्यक्ष",
+  "सचिव",
+  "सहसचिव",
+  "खजिनदार",
+  "सहखजिनदार",
+  "सल्लागार",
+  "कार्यकर्ता",
+] as const;
+
+export type StandardDesignation = typeof STANDARD_DESIGNATIONS[number];
+
 export interface IUser {
   _id?: string;
   name: string;
   mobile: string;
   password?: string;
   role: UserRole;
+  designation?: string; // पद / भूमिका (उदा. मुख्य अध्यक्ष, अध्यक्ष, उपाध्यक्ष, सचिव, सहसचिव, खजिनदार, सहखजिनदार, सल्लागार, कार्यकर्ता, किंवा सानुकूल)
   isMainAdmin: boolean;
   canUpdateReceiptStatus?: boolean; // Main admin can grant authority to change Paid <-> Unpaid
   canManageExpenses: boolean;
@@ -14,6 +29,56 @@ export interface IUser {
   currentSessionToken?: string;
   createdAt: string;
   lastLogin?: string;
+}
+
+export function getUserDesignation(user?: {
+  role?: string;
+  designation?: string;
+  isMainAdmin?: boolean;
+} | null): string {
+  if (!user) return "कार्यकर्ता";
+  if (user.designation && user.designation.trim()) {
+    return user.designation.trim();
+  }
+  if (user.isMainAdmin) return "मुख्य अध्यक्ष";
+  if (user.role === "admin") return "अध्यक्ष";
+  return "कार्यकर्ता";
+}
+
+export function getDesignationInfo(user?: {
+  role?: string;
+  designation?: string;
+  isMainAdmin?: boolean;
+} | null): { label: string; icon: string } {
+  const title = getUserDesignation(user);
+  if (title === "मुख्य अध्यक्ष" || user?.isMainAdmin) {
+    return { label: title, icon: "👑" };
+  }
+  if (title === "अध्यक्ष") {
+    return { label: title, icon: "👑" };
+  }
+  if (title === "उपाध्यक्ष") {
+    return { label: title, icon: "🤝" };
+  }
+  if (title === "सचिव") {
+    return { label: title, icon: "📜" };
+  }
+  if (title === "सहसचिव") {
+    return { label: title, icon: "📝" };
+  }
+  if (title === "खजिनदार") {
+    return { label: title, icon: "💰" };
+  }
+  if (title === "सहखजिनदार") {
+    return { label: title, icon: "💼" };
+  }
+  if (title === "सल्लागार") {
+    return { label: title, icon: "🎖️" };
+  }
+  if (title === "कार्यकर्ता") {
+    return { label: title, icon: "👤" };
+  }
+  return { label: title, icon: "✨" };
 }
 
 export type PaymentMode = "Cash" | "UPI" | "GPay" | "PhonePe" | "Paytm" | "NetBanking" | "Cheque";

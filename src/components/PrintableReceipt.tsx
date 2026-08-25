@@ -377,7 +377,8 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
               }}
               className="font-bold text-xs px-2.5 py-0.5 rounded-md border"
             >
-              {receipt.collectedByName || "एकदंत प्रतिनिधी"}
+              {receipt.collectedByName || "प्रतिनिधी"}
+              {receipt.collectedByRole ? ` (${receipt.collectedByRole})` : ""}
             </span>
           </div>
         </div>

@@ -394,6 +394,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                       <span>•</span>
                       <span>
                         जमाकर्ता: <strong>{rec.collectedByName}</strong>
+                        {rec.collectedByRole ? ` (${rec.collectedByRole})` : ""}
                       </span>
                     </div>
                   </div>

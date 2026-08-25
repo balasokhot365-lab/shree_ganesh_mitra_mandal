@@ -214,72 +214,52 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 सार्वजनिक गणेशोत्सव २०२६ - अधिकृत वर्गणी पावती
 
 सस्नेह नमस्कार, *${receipt.donorName}* जी!
-आपली गणेशोत्सव वर्गणी यशस्वीरीत्या प्राप्त झाली असून अधिकृत पावती PDF सोबत जोडली आहे.
+आपली गणेशोत्सव वर्गणी यशस्वीरीत्या प्राप्त झाली असून अधिकृत पावती सोबत जोडली आहे.
 
 📄 *पावती क्रमांक:* ${receipt.receiptNo}
 💰 *वर्गणी रक्कम:* ₹${Number(receipt.amount).toLocaleString("en-IN")}/- (${wordsText})
 🗓️ *दिनांक:* ${formattedDate}${formattedTime ? ` (${formattedTime})` : ""}
 💳 *पेमेंट पद्धत:* ${receipt.paymentMode}
 ✅ *पावती स्थिती:* ${receipt.paymentStatus === "paid" ? "वर्गणी जमा (PAID)" : "येणे बाकी (UNPAID)"}
-👤 *जमाकर्ता प्रतिनिधी:* ${receipt.collectedByName || "एकदंत प्रतिनिधी"}
+👤 *जमाकर्ता:* ${receipt.collectedByName || "प्रतिनिधी"}${receipt.collectedByRole ? ` (${receipt.collectedByRole})` : ""}
 
 ॥ श्री गणरायाच्या कृपेने आपल्या घरी सुख, समृद्धी, आरोग्य आणि शांती लाभो हीच प्रार्थना! धन्यवाद! ॥
 _श्री गणेश मित्र मंडळ, शिरसवडी  (धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा)_ 🙏`;
 
       const encodedMsg = encodeURIComponent(waText);
       const waUrl = targetPhone
-        ? `https://wa.me/${targetPhone}?text=${encodedMsg}`
-        : `https://wa.me/?text=${encodedMsg}`;
+        ? `https://api.whatsapp.com/send/?phone=${targetPhone}&text=${encodedMsg}`
+        : `https://api.whatsapp.com/send/?text=${encodedMsg}`;
 
       let sharedDirectly = false;
 
       // Preferred path (mobile only): hand the actual PDF file to the OS
       // share sheet. This is the ONLY way a web page can make WhatsApp
       // receive a real attached file (image or PDF) instead of just a text
-      // message — a wa.me link can prefill text for a specific number, but
-      // it cannot pre-attach a file (that's a WhatsApp/OS restriction, not
-      // something fixable in this app's code).
+      // message.
       if (canUseNativeShare) {
         try {
           const file = new File([blob], fileName, {
             type: "application/pdf",
           });
-          console.log("canShare(file)?", navigator.canShare({ files: [file] }));
           if (navigator.canShare({ files: [file] })) {
             await navigator.share({
-              title: `एकदंत मंडळ पावती क्र. ${receipt.receiptNo}`,
+              title: `श्री गणेश मित्र मंडळ पावती क्र. ${receipt.receiptNo}`,
               text: waText,
               files: [file],
             });
             sharedDirectly = true;
             showToast(`✅ पावती PDF व्हॉट्सॲपवर पाठवण्यासाठी शेअर केली!`);
-          } else {
-            console.warn("canShare returned false — falling back.");
           }
         } catch (shareErr: any) {
           if (shareErr?.name === "AbortError") {
-            // User cancelled the share sheet — not an error, don't fall
-            // back to the wa.me flow or show an error toast.
             return;
           }
           console.error("navigator.share failed:", shareErr);
         }
       }
 
-      // Fallback (desktop, and any mobile browser without file-sharing
-      // support): copy the receipt as an IMAGE to the clipboard so it can
-      // be pasted (Ctrl+V) straight into the WhatsApp Web chat box — that
-      // actually sends the visual receipt, not just text. The clipboard
-      // write must happen while THIS tab still has focus, so it runs
-      // before we open the WhatsApp Web tab (opening a new tab shifts
-      // browser focus away and silently breaks the clipboard write if done
-      // after). A PDF copy is also downloaded as a saved record.
       if (!sharedDirectly) {
-        console.log(
-          "Clipboard API available?",
-          typeof ClipboardItem !== "undefined",
-          !!navigator.clipboard?.write,
-        );
         let imageCopied = false;
         try {
           if (
@@ -310,7 +290,6 @@ _श्री गणेश मित्र मंडळ, शिरसवडी  
 
         const waWindow = window.open(waUrl, "_blank");
         if (!waWindow) {
-          console.error("Popup blocked — waWindow was null.");
           showToast(
             "⚠️ Popup blocked! ब्राउझर सेटिंग्जमध्ये पॉपअप्सना परवानगी द्या.",
           );
@@ -318,10 +297,10 @@ _श्री गणेश मित्र मंडळ, शिरसवडी  
 
         showToast(
           imageCopied
-            ? `🖼️ पावतीचा फोटो क्लिपबोर्डवर कॉपी झाला! व्हॉट्सॲप चॅटमध्ये Ctrl+V दाबून पेस्ट करा व पाठवा.`
+            ? `🖼️ पावतीचा फोटो कॉपी झाला व मो. +${targetPhone} साठी व्हॉट्सॲप उघडले! चॅटमध्ये Ctrl+V ने फोटो पेस्ट करा व पाठवा.`
             : targetPhone
-              ? `📄 पावती PDF डाऊनलोड झाली व मो. +${targetPhone} साठी व्हॉट्सॲप उघडले! कृपया 📎 ने PDF जोडा.`
-              : `📄 पावती PDF डाऊनलोड झाली व व्हॉट्सॲप उघडले! नंबर निवडून 📎 ने PDF जोडा.`,
+              ? `📄 पावती PDF डाऊनलोड झाली व मो. +${targetPhone} साठी व्हॉट्सॲप उघडले!`
+              : `📄 पावती PDF डाऊनलोड झाली व व्हॉट्सॲप उघडले!`,
         );
       }
     } catch (err: any) {

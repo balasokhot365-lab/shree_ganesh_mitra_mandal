@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { IUser, IDashboardStats, IMemberPerformance } from "../types";
+import {
+  IUser,
+  IDashboardStats,
+  IMemberPerformance,
+  STANDARD_DESIGNATIONS,
+  getUserDesignation,
+} from "../types";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -18,8 +24,83 @@ import {
   Trash2,
   AlertTriangle,
   RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import { CleanDataModal } from "./CleanDataModal";
+
+export const getDesignationBadge = (
+  u?: { role?: string; designation?: string; isMainAdmin?: boolean } | null,
+) => {
+  const title = getUserDesignation(u);
+  if (title === "मुख्य अध्यक्ष" || u?.isMainAdmin) {
+    return {
+      label: title,
+      icon: "👑",
+      className: "bg-red-100 text-red-900 border-red-300 font-black",
+    };
+  }
+  if (title === "अध्यक्ष") {
+    return {
+      label: title,
+      icon: "👑",
+      className: "bg-amber-100 text-amber-900 border-amber-300 font-bold",
+    };
+  }
+  if (title === "उपाध्यक्ष") {
+    return {
+      label: title,
+      icon: "🤝",
+      className: "bg-orange-100 text-orange-900 border-orange-300 font-bold",
+    };
+  }
+  if (title === "सचिव") {
+    return {
+      label: title,
+      icon: "📜",
+      className: "bg-blue-100 text-blue-900 border-blue-300 font-bold",
+    };
+  }
+  if (title === "सहसचिव") {
+    return {
+      label: title,
+      icon: "📝",
+      className: "bg-sky-100 text-sky-900 border-sky-300 font-bold",
+    };
+  }
+  if (title === "खजिनदार") {
+    return {
+      label: title,
+      icon: "💰",
+      className: "bg-emerald-100 text-emerald-900 border-emerald-300 font-bold",
+    };
+  }
+  if (title === "सहखजिनदार") {
+    return {
+      label: title,
+      icon: "💼",
+      className: "bg-teal-100 text-teal-900 border-teal-300 font-bold",
+    };
+  }
+  if (title === "सल्लागार") {
+    return {
+      label: title,
+      icon: "🎖️",
+      className: "bg-purple-100 text-purple-900 border-purple-300 font-bold",
+    };
+  }
+  if (title === "कार्यकर्ता") {
+    return {
+      label: title,
+      icon: "👤",
+      className: "bg-stone-100 text-stone-700 border-stone-300 font-semibold",
+    };
+  }
+  return {
+    label: title,
+    icon: "✨",
+    className: "bg-violet-100 text-violet-900 border-violet-300 font-bold",
+  };
+};
 
 export const MemberPerformance: React.FC = () => {
   const { user, isAdmin, isMainAdmin } = useAuth();
@@ -39,6 +120,8 @@ export const MemberPerformance: React.FC = () => {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"admin" | "karyakarta">("karyakarta");
+  const [designation, setDesignation] = useState<string>("कार्यकर्ता");
+  const [customDesignation, setCustomDesignation] = useState<string>("");
   const [canUpdateReceiptStatus, setCanUpdateReceiptStatus] = useState(false);
   const [canManageExpenses, setCanManageExpenses] = useState(false);
   const [canCreateAdmin, setCanCreateAdmin] = useState(false);
@@ -67,6 +150,37 @@ export const MemberPerformance: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
+  // Handle Designation selection with smart defaults
+  const handleDesignationChange = (newDesig: string) => {
+    if (newDesig === "मुख्य अध्यक्ष" && !editingUser?.isMainAdmin) {
+      alert(
+        "मंडळात मुख्य अध्यक्ष हे १ च पद आहे. नवीन सदस्याला हे पद देता येणार नाही.",
+      );
+      return;
+    }
+    setDesignation(newDesig);
+    if (newDesig === "मुख्य अध्यक्ष" || newDesig === "अध्यक्ष") {
+      setRole("admin");
+      setCanUpdateReceiptStatus(true);
+      setCanManageExpenses(true);
+      setCanCreateAdmin(true);
+    } else if (
+      newDesig === "सचिव" ||
+      newDesig === "खजिनदार" ||
+      newDesig === "उपाध्यक्ष"
+    ) {
+      setRole("karyakarta");
+      setCanUpdateReceiptStatus(true);
+      setCanManageExpenses(true);
+    } else if (newDesig === "सहसचिव" || newDesig === "सहखजिनदार") {
+      setRole("karyakarta");
+      setCanUpdateReceiptStatus(true);
+      setCanManageExpenses(true);
+    } else if (newDesig === "कार्यकर्ता") {
+      setRole("karyakarta");
+    }
+  };
+
   const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -81,31 +195,51 @@ export const MemberPerformance: React.FC = () => {
       return;
     }
 
+    const finalDesignation =
+      designation === "इतर"
+        ? customDesignation.trim() || "कार्यकर्ता"
+        : designation;
+
+    const determinedRole: "admin" | "karyakarta" =
+      finalDesignation === "मुख्य अध्यक्ष" ||
+      finalDesignation === "अध्यक्ष" ||
+      role === "admin"
+        ? "admin"
+        : "karyakarta";
+
     setIsSubmitting(true);
     try {
       if (editingUser) {
         await api.updateUser(editingUser._id || editingUser.mobile, {
           name: name.trim(),
-          role,
+          role: determinedRole,
+          designation: finalDesignation,
           canUpdateReceiptStatus:
-            role === "admin" ? true : canUpdateReceiptStatus,
-          canManageExpenses: role === "admin" ? true : canManageExpenses,
-          canCreateAdmin,
+            determinedRole === "admin" ? true : canUpdateReceiptStatus,
+          canManageExpenses:
+            determinedRole === "admin" ? true : canManageExpenses,
+          canCreateAdmin: determinedRole === "admin" ? canCreateAdmin : false,
           isActive,
           ...(password.trim() ? { password: password.trim() } : {}),
         });
+        setSuccessToast(
+          `✅ ${name} यांची माहिती व पद (${finalDesignation}) जतन केले!`,
+        );
       } else {
         await api.createUser({
           name: name.trim(),
           mobile: mobile.trim(),
           password: password.trim(),
-          role,
+          role: determinedRole,
+          designation: finalDesignation,
           canUpdateReceiptStatus:
-            role === "admin" ? true : canUpdateReceiptStatus,
-          canManageExpenses: role === "admin" ? true : canManageExpenses,
-          canCreateAdmin,
+            determinedRole === "admin" ? true : canUpdateReceiptStatus,
+          canManageExpenses:
+            determinedRole === "admin" ? true : canManageExpenses,
+          canCreateAdmin: determinedRole === "admin" ? canCreateAdmin : false,
           isActive,
         });
+        setSuccessToast(`✅ नवीन सदस्य ${name} (${finalDesignation}) जोडले!`);
       }
 
       setIsAddUserOpen(false);
@@ -114,6 +248,8 @@ export const MemberPerformance: React.FC = () => {
       setMobile("");
       setPassword("");
       setRole("karyakarta");
+      setDesignation("कार्यकर्ता");
+      setCustomDesignation("");
       setCanUpdateReceiptStatus(false);
       setCanManageExpenses(false);
       setCanCreateAdmin(false);
@@ -163,33 +299,26 @@ export const MemberPerformance: React.FC = () => {
     }
   };
 
-  const handleToggleAdminRole = async (u: IUser) => {
-    if (u.isMainAdmin || u.mobile === "8149703310") {
-      alert("मुख्य अध्यक्षांचे पद बदलता येणार नाही.");
-      return;
-    }
-    const newRole = u.role === "admin" ? "karyakarta" : "admin";
-    try {
-      await api.updateUser(u._id || u.mobile, {
-        role: newRole,
-        canUpdateReceiptStatus:
-          newRole === "admin" ? true : u.canUpdateReceiptStatus,
-        canManageExpenses: newRole === "admin" ? true : u.canManageExpenses,
-      });
-      await fetchData();
-    } catch (err: any) {
-      alert(err.message);
-    }
-  };
-
   const handleDeleteUser = async (u: IUser) => {
-    if (u.isMainAdmin || u.mobile === "8149703310") {
-      alert("मुख्य अध्यक्ष उद्धव इंगळे (8149703310) डिलीट करता येणार नाही!");
+    if (!isMainAdmin) {
+      alert(
+        "फक्त मुख्य अध्यक्षच (Chief President) सदस्यांना हटवू शकतात! इतर कोणालाही हा अधिकार नाही.",
+      );
       return;
     }
-    if (!window.confirm(`${u.name} या सदस्याला हटवायचे आहे का?`)) return;
+    if (u.isMainAdmin || u.designation === "मुख्य अध्यक्ष") {
+      alert("मुख्य अध्यक्ष हे पद डिलीट करता येणार नाही!");
+      return;
+    }
+    if (
+      !window.confirm(
+        `कायमचे हटवायचे आहे का?\nसदस्य: ${u.name} (${getUserDesignation(u)})\nमोबाईल: +91 ${u.mobile}`,
+      )
+    )
+      return;
     try {
       await api.deleteUser(u._id || u.mobile);
+      setSuccessToast(`सदस्य हटवला: ${u.name}`);
       await fetchData();
     } catch (err: any) {
       alert(err.message);
@@ -201,6 +330,15 @@ export const MemberPerformance: React.FC = () => {
     setName(u.name);
     setMobile(u.mobile);
     setPassword("");
+    const curDesig = getUserDesignation(u);
+    const isStandard = STANDARD_DESIGNATIONS.includes(curDesig as any);
+    if (isStandard) {
+      setDesignation(curDesig);
+      setCustomDesignation("");
+    } else {
+      setDesignation("इतर");
+      setCustomDesignation(curDesig);
+    }
     setRole(u.role);
     setCanUpdateReceiptStatus(!!u.canUpdateReceiptStatus);
     setCanManageExpenses(u.canManageExpenses);
@@ -219,28 +357,16 @@ export const MemberPerformance: React.FC = () => {
             <span>{t.mandalName}</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black font-serif mt-1">
-            {t.menuMembers}
+            {t.menuMembers} (पद व भूमिका व्यवस्थापन)
           </h2>
           <p className="text-xs sm:text-sm text-amber-200 mt-0.5">
             {language === "mr"
-              ? "कार्यकर्त्यांची पावती संकलन कामगिरी व अध्यक्ष अधिकार व्यवस्थापन."
-              : "Member collection performance tracking and administrative authority controls."}
+              ? "कार्यकर्ते व पदाधिकारी (मुख्य अध्यक्ष, सचिव, खजिनदार, सल्लागार इत्यादी) पद, नाव सानुकूलन व अधिकार नियंत्रण."
+              : "Member & official roles (Chief President, Secretary, Treasurer, Advisor, etc.) name customization and authority controls."}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Main Admin Clean All Data Button */}
-          {/* {isMainAdmin && (
-            <button
-              onClick={() => setIsCleanModalOpen(true)}
-              className="bg-red-600/90 hover:bg-red-600 text-white font-extrabold px-3.5 py-3 rounded-xl text-xs sm:text-sm shadow-lg active:scale-95 transition-all flex items-center space-x-1.5 border border-red-400/40 cursor-pointer shrink-0"
-              title="सर्व डेटा क्लीन करून हिशोब ० करा (फक्त मुख्य अध्यक्ष)"
-            >
-              <Trash2 className="w-4 h-4 text-yellow-300" />
-              <span>डेटा क्लीन करा (Reset)</span>
-            </button>
-          )} */}
-
           {isAdmin && (
             <button
               onClick={() => {
@@ -249,6 +375,9 @@ export const MemberPerformance: React.FC = () => {
                 setMobile("");
                 setPassword("");
                 setRole("karyakarta");
+                setDesignation("कार्यकर्ता");
+                setCustomDesignation("");
+                setCanUpdateReceiptStatus(false);
                 setCanManageExpenses(false);
                 setCanCreateAdmin(false);
                 setIsActive(true);
@@ -290,64 +419,81 @@ export const MemberPerformance: React.FC = () => {
 
         {stats?.memberLeaderboard && stats.memberLeaderboard.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.memberLeaderboard.map((item, idx) => (
-              <div
-                key={item.userId}
-                className="bg-stone-50/80 border border-stone-200 rounded-xl p-4 flex flex-col justify-between hover:border-amber-400 transition-all"
-              >
-                <div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+            {stats.memberLeaderboard.map((item, idx) => {
+              const matchedUser = users.find(
+                (u) =>
+                  (u._id || u.mobile) === item.userId ||
+                  u.name === item.userName,
+              );
+              const badge = getDesignationBadge(
+                matchedUser || {
+                  role: item.userRole,
+                  designation: item.userRole,
+                },
+              );
+
+              return (
+                <div
+                  key={item.userId}
+                  className="bg-stone-50/80 border border-stone-200 rounded-xl p-4 flex flex-col justify-between hover:border-amber-400 transition-all"
+                >
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+                            idx === 0
+                              ? "bg-amber-500 text-white"
+                              : idx === 1
+                                ? "bg-stone-300 text-stone-800"
+                                : "bg-orange-200 text-orange-900"
+                          }`}
+                        >
+                          #{idx + 1}
+                        </span>
+                        <span className="font-bold text-stone-900 text-sm">
+                          {item.userName}
+                        </span>
+                      </div>
                       <span
-                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
-                          idx === 0
-                            ? "bg-amber-500 text-white"
-                            : idx === 1
-                              ? "bg-stone-300 text-stone-800"
-                              : "bg-orange-200 text-orange-900"
-                        }`}
+                        className={`text-[10px] px-2 py-0.5 rounded border flex items-center gap-1 ${badge.className}`}
                       >
-                        #{idx + 1}
-                      </span>
-                      <span className="font-bold text-stone-900 text-sm">
-                        {item.userName}
+                        <span>{badge.icon}</span>
+                        <span>{badge.label}</span>
                       </span>
                     </div>
-                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                      {item.userRole === "admin" ? "अध्यक्ष" : "कार्यकर्ता"}
-                    </span>
+
+                    <div className="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-stone-200 text-xs">
+                      <div>
+                        <span className="text-stone-500 block text-[10px]">
+                          दिलेल्या पावत्या:
+                        </span>
+                        <span className="font-bold text-stone-900">
+                          {item.receiptsCount} पावत्या
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-stone-500 block text-[10px]">
+                          एकूण जमा वर्गणी:
+                        </span>
+                        <span className="font-black text-emerald-700 font-mono text-sm">
+                          ₹ {item.paidAmount.toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-stone-200 text-xs">
-                    <div>
-                      <span className="text-stone-500 block text-[10px]">
-                        दिलेल्या पावत्या:
-                      </span>
-                      <span className="font-bold text-stone-900">
-                        {item.receiptsCount} पावत्या
-                      </span>
+                  {item.unpaidAmount > 0 && (
+                    <div className="mt-2 text-[10px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
+                      बाकी येणे वर्गणी:{" "}
+                      <strong>
+                        ₹ {item.unpaidAmount.toLocaleString("en-IN")}
+                      </strong>
                     </div>
-                    <div>
-                      <span className="text-stone-500 block text-[10px]">
-                        एकूण जमा वर्गणी:
-                      </span>
-                      <span className="font-black text-emerald-700 font-mono text-sm">
-                        ₹ {item.paidAmount.toLocaleString("en-IN")}
-                      </span>
-                    </div>
-                  </div>
+                  )}
                 </div>
-
-                {item.unpaidAmount > 0 && (
-                  <div className="mt-2 text-[10px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
-                    बाकी येणे वर्गणी:{" "}
-                    <strong>
-                      ₹ {item.unpaidAmount.toLocaleString("en-IN")}
-                    </strong>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <p className="text-xs text-stone-500">कोणतीही नोंद उपलब्ध नाही.</p>
@@ -361,11 +507,11 @@ export const MemberPerformance: React.FC = () => {
             <Shield className="w-5 h-5 text-amber-800" />
             <h3 className="font-bold text-base text-stone-900">
               {language === "mr"
-                ? "सर्व सदस्य यादी व अधिकार नियंत्रण"
-                : "Member Directory & Authority Controls"}
+                ? "सर्व पदाधिकारी व सदस्य यादी (नाव व पद सानुकूलन)"
+                : "Member Directory & Custom Designation Controls"}
             </h3>
           </div>
-          <span className="text-xs text-stone-500">
+          <span className="text-xs text-stone-500 font-medium">
             एकूण सदस्य: {users.length}
           </span>
         </div>
@@ -374,9 +520,9 @@ export const MemberPerformance: React.FC = () => {
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-stone-100 text-stone-700 font-bold border-b border-stone-200">
-                <th className="py-3 px-4">सदस्य नाव (Name)</th>
+                <th className="py-3 px-4">सदस्य नाव (Custom Name)</th>
                 <th className="py-3 px-4">मोबाईल क्र. (Login ID)</th>
-                <th className="py-3 px-4">पद (Role)</th>
+                <th className="py-3 px-4">पद / भूमिका (Designation)</th>
                 <th className="py-3 px-4">पावती स्थिती अधिकार (Paid/Unpaid)</th>
                 <th className="py-3 px-4">खर्च अधिकार (Expense Auth)</th>
                 <th className="py-3 px-4">स्थिती (Status)</th>
@@ -384,128 +530,126 @@ export const MemberPerformance: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 font-medium text-stone-800">
-              {users.map((u) => (
-                <tr
-                  key={u._id || u.mobile}
-                  className="hover:bg-stone-50/80 transition-colors"
-                >
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-stone-900">{u.name}</span>
-                      {(u.isMainAdmin || u.mobile === "8149703310") && (
-                        <span className="bg-red-100 text-red-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-red-300">
-                          {t.mainAdminBadge}
+              {users.map((u) => {
+                const badge = getDesignationBadge(u);
+                return (
+                  <tr
+                    key={u._id || u.mobile}
+                    className="hover:bg-stone-50/80 transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-stone-900 text-sm">
+                          {u.name}
                         </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 font-mono font-semibold text-stone-700">
-                    +91 {u.mobile}
-                  </td>
-                  <td className="py-3 px-4">
-                    <button
-                      onClick={() => isAdmin && handleToggleAdminRole(u)}
-                      disabled={
-                        !isAdmin || u.isMainAdmin || u.mobile === "8149703310"
-                      }
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
-                        u.role === "admin"
-                          ? "bg-amber-100 text-amber-900 border-amber-300"
-                          : "bg-stone-100 text-stone-700 border-stone-300 hover:bg-stone-200"
-                      }`}
-                      title={isAdmin ? "क्लिक करून पद बदला" : ""}
-                    >
-                      {u.role === "admin"
-                        ? "👑 अध्यक्ष (Admin)"
-                        : "👤 कार्यकर्ता (Member)"}
-                    </button>
-                  </td>
-                  {/* Paid <-> Unpaid Authority Toggle */}
-                  <td className="py-3 px-4">
-                    <button
-                      onClick={() =>
-                        isAdmin && handleToggleReceiptStatusAuth(u)
-                      }
-                      disabled={
-                        !isAdmin ||
-                        u.isMainAdmin ||
-                        u.mobile === "8149703310" ||
-                        u.role === "admin"
-                      }
-                      className={`px-2 py-1 rounded text-[10px] font-extrabold flex items-center space-x-1 border transition-colors cursor-pointer ${
-                        u.canUpdateReceiptStatus || u.role === "admin"
-                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                          : "bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200"
-                      }`}
-                      title="पावती स्थिती (Paid <-> Unpaid) बदलण्याचा अधिकार"
-                    >
-                      <ShieldCheck className="w-3 h-3" />
-                      <span>
-                        {u.canUpdateReceiptStatus || u.role === "admin"
-                          ? "मान्य (Allowed)"
-                          : "अमान्य (No)"}
-                      </span>
-                    </button>
-                  </td>
-                  <td className="py-3 px-4">
-                    <button
-                      onClick={() => isAdmin && handleToggleExpenseAuth(u)}
-                      disabled={!isAdmin}
-                      className={`px-2 py-1 rounded text-[10px] font-extrabold flex items-center space-x-1 border transition-colors cursor-pointer ${
-                        u.canManageExpenses || u.role === "admin"
-                          ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                          : "bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200"
-                      }`}
-                    >
-                      <ShieldCheck className="w-3 h-3" />
-                      <span>
-                        {u.canManageExpenses || u.role === "admin"
-                          ? "अधिकार प्राप्त"
-                          : "नाही"}
-                      </span>
-                    </button>
-                  </td>
-                  <td className="py-3 px-4">
-                    <button
-                      onClick={() => isAdmin && handleToggleActive(u)}
-                      disabled={
-                        !isAdmin || u.isMainAdmin || u.mobile === "8149703310"
-                      }
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
-                        u.isActive
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-red-50 text-red-700 border-red-200"
-                      }`}
-                    >
-                      {u.isActive
-                        ? "✓ सक्रिय (Active)"
-                        : "✕ निष्क्रिय (Inactive)"}
-                    </button>
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    {isAdmin && (
-                      <div className="flex items-center justify-center space-x-1.5">
-                        <button
-                          onClick={() => openEditUser(u)}
-                          className="p-1.5 hover:bg-stone-200 rounded text-stone-700 cursor-pointer"
-                          title="माहिती संपादित करा"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        {!(u.isMainAdmin || u.mobile === "8149703310") && (
-                          <button
-                            onClick={() => handleDeleteUser(u)}
-                            className="p-1.5 hover:bg-red-50 rounded text-red-600 cursor-pointer"
-                            title="सदस्य हटवा"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                        {u.isMainAdmin && (
+                          <span className="bg-red-100 text-red-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-red-300">
+                            {t.mainAdminBadge}
+                          </span>
                         )}
                       </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3 px-4 font-mono font-semibold text-stone-700">
+                      +91 {u.mobile}
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => isAdmin && openEditUser(u)}
+                        disabled={!isAdmin}
+                        className={`px-2.5 py-1 rounded-lg text-xs border flex items-center gap-1.5 transition-all shadow-xs ${badge.className} ${
+                          isAdmin ? "cursor-pointer hover:scale-105" : ""
+                        }`}
+                        title={
+                          isAdmin ? "क्लिक करून नाव किंवा पद संपादित करा" : ""
+                        }
+                      >
+                        <span>{badge.icon}</span>
+                        <span>{badge.label}</span>
+                      </button>
+                    </td>
+                    {/* Paid <-> Unpaid Authority Toggle */}
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() =>
+                          isAdmin && handleToggleReceiptStatusAuth(u)
+                        }
+                        disabled={
+                          !isAdmin || u.isMainAdmin || u.role === "admin"
+                        }
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold flex items-center space-x-1 border transition-colors cursor-pointer ${
+                          u.canUpdateReceiptStatus || u.role === "admin"
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                            : "bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200"
+                        }`}
+                        title="पावती स्थिती (Paid <-> Unpaid) बदलण्याचा अधिकार"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>
+                          {u.canUpdateReceiptStatus || u.role === "admin"
+                            ? "मान्य (Allowed)"
+                            : "अमान्य (No)"}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => isAdmin && handleToggleExpenseAuth(u)}
+                        disabled={!isAdmin || u.isMainAdmin}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold flex items-center space-x-1 border transition-colors cursor-pointer ${
+                          u.canManageExpenses || u.role === "admin"
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                            : "bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200"
+                        }`}
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>
+                          {u.canManageExpenses || u.role === "admin"
+                            ? "अधिकार प्राप्त"
+                            : "नाही"}
+                        </span>
+                      </button>
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => isAdmin && handleToggleActive(u)}
+                        disabled={!isAdmin || u.isMainAdmin}
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                          u.isActive
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                        }`}
+                      >
+                        {u.isActive
+                          ? "✓ सक्रिय (Active)"
+                          : "✕ निष्क्रिय (Inactive)"}
+                      </button>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      {isAdmin && (
+                        <div className="flex items-center justify-center space-x-1.5">
+                          <button
+                            onClick={() => openEditUser(u)}
+                            className="p-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg text-amber-900 font-bold flex items-center gap-1 transition-all cursor-pointer"
+                            title="नाव, पद व अधिकार संपादित करा"
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-amber-700" />
+                            <span className="text-[11px]">संपादित करा</span>
+                          </button>
+                          {isMainAdmin && !u.isMainAdmin && (
+                            <button
+                              onClick={() => handleDeleteUser(u)}
+                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors cursor-pointer"
+                              title="सदस्य हटवा (फक्त मुख्य अध्यक्षांना अधिकार)"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -516,12 +660,20 @@ export const MemberPerformance: React.FC = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 space-y-4">
             <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-base text-stone-900">
-                {editingUser ? "सदस्य माहिती संपादित करा" : t.addNewMember}
-              </h3>
+              <div>
+                <h3 className="font-bold text-base text-stone-900">
+                  {editingUser
+                    ? "सदस्य माहिती व पद सानुकूल करा"
+                    : t.addNewMember}
+                </h3>
+                <p className="text-xs text-stone-500">
+                  नाव आणि पद / भूमिका (खजिनदार, सचिव, अध्यक्ष इ.) निवडा किंवा
+                  टाईप करा.
+                </p>
+              </div>
               <button
                 onClick={() => setIsAddUserOpen(false)}
-                className="text-stone-400 hover:text-stone-700 font-bold"
+                className="text-stone-400 hover:text-stone-700 font-bold p-1 rounded-lg"
               >
                 ✕
               </button>
@@ -534,25 +686,27 @@ export const MemberPerformance: React.FC = () => {
             )}
 
             <form onSubmit={handleSaveUser} className="space-y-4 text-xs">
+              {/* Member Name (Customizable) */}
               <div>
                 <label className="block font-bold text-stone-700 uppercase mb-1">
                   <span className="text-red-500 mr-1">*</span>
-                  {t.memberName}:
+                  {t.memberName} (नाव):
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="उदा. राहुल पाटील"
-                  className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-amber-500"
+                  placeholder="उदा. राहुल पाटील / सतीश साळुंखे"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-semibold text-stone-900 focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
+              {/* Mobile Number */}
               <div>
                 <label className="block font-bold text-stone-700 uppercase mb-1">
                   <span className="text-red-500 mr-1">*</span>
-                  {t.memberMobile}:
+                  {t.memberMobile} (लॉगिन मोबाईल क्र.):
                 </label>
                 <input
                   type="tel"
@@ -562,69 +716,137 @@ export const MemberPerformance: React.FC = () => {
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))}
                   placeholder="१० अंकी मोबाईल क्र."
-                  className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                  className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono font-bold text-stone-900 focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
                 />
               </div>
 
+              {/* Password */}
               <div>
                 <label className="block font-bold text-stone-700 uppercase mb-1">
-                  {t.memberPassword} {editingUser && "(बदलायचा असेल तरच टाका)"}:
+                  {t.memberPassword}{" "}
+                  {editingUser && "(बदलायचा असेल तरच नवीन टाका)"}:
                 </label>
                 <input
                   type="text"
                   required={!editingUser}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="लॉगिन पासवर्ड"
+                  placeholder="लॉगिन पासवर्ड टाका"
                   className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-mono focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
+              {/* Role / Designation Selector (पद / भूमिका) */}
               <div>
                 <label className="block font-bold text-stone-700 uppercase mb-1">
-                  {t.memberRole}:
+                  <span className="text-red-500 mr-1">*</span>
+                  {t.memberRole} (पद / भूमिका):
                 </label>
                 <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as any)}
-                  className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold"
+                  value={designation}
+                  onChange={(e) => handleDesignationChange(e.target.value)}
+                  className="w-full p-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-bold text-stone-900 focus:ring-2 focus:ring-amber-500"
                 >
-                  <option value="karyakarta">👤 कार्यकर्ता (Karyakarta)</option>
-                  <option value="admin">👑 अध्यक्ष / ॲडमिन (Admin)</option>
+                  {editingUser?.isMainAdmin ? (
+                    <option value="मुख्य अध्यक्ष">
+                      👑 मुख्य अध्यक्ष (Chief President)
+                    </option>
+                  ) : (
+                    <option value="मुख्य अध्यक्ष" disabled>
+                      👑 मुख्य अध्यक्ष (फक्त १ मुख्य प्रशासक - राखीव)
+                    </option>
+                  )}
+                  <option value="अध्यक्ष">
+                    👑 अध्यक्ष (President / Admin)
+                  </option>
+                  <option value="उपाध्यक्ष">
+                    🤝 उपाध्यक्ष (Vice President)
+                  </option>
+                  <option value="सचिव">📜 सचिव (Secretary)</option>
+                  <option value="सहसचिव">📝 सहसचिव (Joint Secretary)</option>
+                  <option value="खजिनदार">💰 खजिनदार (Treasurer)</option>
+                  <option value="सहखजिनदार">
+                    💼 सहखजिनदार (Joint Treasurer)
+                  </option>
+                  <option value="सल्लागार">🎖️ सल्लागार (Advisor)</option>
+                  <option value="कार्यकर्ता">
+                    👤 कार्यकर्ता (Member / Karyakarta)
+                  </option>
+                  {/* <option value="इतर">✍️ इतर / सानुकूल पद (Custom Designation...)</option> */}
                 </select>
               </div>
 
+              {/* Custom Designation Input commented out */}
+              {/* {designation === "इतर" && (
+                <div className="bg-amber-50/80 p-3 rounded-xl border border-amber-200 space-y-1">
+                  <label className="block font-bold text-amber-900 uppercase text-[11px]">
+                    सानुकूल पद नाव टाईप करा (Custom Designation Name):
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customDesignation}
+                    onChange={(e) => setCustomDesignation(e.target.value)}
+                    placeholder="उदा. प्रसिद्धी प्रमुख / हिशोब तपासणीस / उत्सव प्रमुख"
+                    className="w-full p-2 bg-white border border-amber-300 rounded-lg text-xs font-bold text-stone-900 focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              )} */}
+
+              {/* Authority & Permission Toggles */}
               <div className="space-y-2 pt-2 border-t">
-                <label className="flex items-center space-x-2 cursor-pointer">
+                <div className="text-[11px] font-bold text-stone-500 uppercase">
+                  अधिकार व परवानगी (Authorities):
+                </div>
+
+                <label className="flex items-center space-x-2 cursor-pointer bg-stone-50 p-2 rounded-lg border border-stone-200">
                   <input
                     type="checkbox"
-                    checked={canUpdateReceiptStatus || role === "admin"}
+                    checked={
+                      canUpdateReceiptStatus ||
+                      role === "admin" ||
+                      designation === "मुख्य अध्यक्ष" ||
+                      designation === "अध्यक्ष"
+                    }
                     onChange={(e) =>
                       setCanUpdateReceiptStatus(e.target.checked)
                     }
-                    disabled={role === "admin"}
+                    disabled={
+                      role === "admin" ||
+                      designation === "मुख्य अध्यक्ष" ||
+                      designation === "अध्यक्ष"
+                    }
                     className="w-4 h-4 text-amber-600 rounded"
                   />
                   <span className="font-semibold text-stone-800">
-                    🔑 पावती स्थिती बदलण्याचा अधिकार (Authority to change
-                    Paid/Unpaid)
+                    🔑 पावती स्थिती बदलण्याचा अधिकार (Paid / Unpaid Status
+                    Change)
                   </span>
                 </label>
 
-                <label className="flex items-center space-x-2 cursor-pointer">
+                <label className="flex items-center space-x-2 cursor-pointer bg-stone-50 p-2 rounded-lg border border-stone-200">
                   <input
                     type="checkbox"
-                    checked={canManageExpenses || role === "admin"}
+                    checked={
+                      canManageExpenses ||
+                      role === "admin" ||
+                      designation === "मुख्य अध्यक्ष" ||
+                      designation === "अध्यक्ष"
+                    }
                     onChange={(e) => setCanManageExpenses(e.target.checked)}
-                    disabled={role === "admin"}
+                    disabled={
+                      role === "admin" ||
+                      designation === "मुख्य अध्यक्ष" ||
+                      designation === "अध्यक्ष"
+                    }
                     className="w-4 h-4 text-amber-600 rounded"
                   />
                   <span className="font-semibold text-stone-800">
-                    {t.canManageExpenses}
+                    💰 {t.canManageExpenses} (Expense Manager Authority)
                   </span>
                 </label>
 
-                <label className="flex items-center space-x-2 cursor-pointer">
+                <label className="flex items-center space-x-2 cursor-pointer bg-stone-50 p-2 rounded-lg border border-stone-200">
                   <input
                     type="checkbox"
                     checked={isActive}
@@ -632,7 +854,7 @@ export const MemberPerformance: React.FC = () => {
                     className="w-4 h-4 text-emerald-600 rounded"
                   />
                   <span className="font-semibold text-stone-800">
-                    खाते सक्रिय ठेवा (Active Account)
+                    ✅ खाते सक्रिय ठेवा (Active Account)
                   </span>
                 </label>
               </div>
@@ -641,7 +863,7 @@ export const MemberPerformance: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddUserOpen(false)}
-                  className="px-4 py-2 bg-stone-200 text-stone-700 font-semibold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-700 font-semibold rounded-xl cursor-pointer"
                 >
                   रद्द करा
                 </button>
@@ -657,16 +879,6 @@ export const MemberPerformance: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Main Admin Clean Data Modal */}
-      {/* <CleanDataModal
-        isOpen={isCleanModalOpen}
-        onClose={() => setIsCleanModalOpen(false)}
-        onSuccess={(msg) => {
-          setSuccessToast(msg);
-          fetchData();
-        }}
-      /> */}
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { api } from "../services/api";
-import { IReceipt, PaymentMode, PaymentStatus } from "../types";
+import { IReceipt, PaymentMode, PaymentStatus, getUserDesignation,} from "../types";
 import { convertNumberToWords } from "../locales/translations";
 import { ReceiptModal } from "./ReceiptModal";
 import {
@@ -150,7 +150,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({
               {user?.name || "प्रतिनिधी"}
             </span>
             <span className="text-[10px] text-amber-300 ml-1">
-              ({user?.role === "admin" ? "अध्यक्ष" : "कार्यकर्ता"})
+              ({getUserDesignation(user)})
             </span>
           </div>
         </div>
@@ -184,11 +184,7 @@ export const ReceiptForm: React.FC<ReceiptFormProps> = ({
                 <div className="text-sm font-extrabold text-stone-900 flex items-center gap-2">
                   <span>{user?.name || "प्रतिनिधी"}</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-amber-200 text-amber-950 font-bold">
-                    {user?.isMainAdmin
-                      ? "मुख्य अध्यक्ष"
-                      : user?.role === "admin"
-                        ? "अध्यक्ष"
-                        : "कार्यकर्ता"}
+                    {getUserDesignation(user)}
                   </span>
                   {user?.mobile && (
                     <span className="text-xs text-stone-500 font-mono">

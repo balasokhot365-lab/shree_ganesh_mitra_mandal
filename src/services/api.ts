@@ -215,6 +215,7 @@ export const api = {
     mobile: string;
     password: string;
     role: string;
+    designation?: string;
     canUpdateReceiptStatus?: boolean;
     canManageExpenses: boolean;
     canCreateAdmin: boolean;

@@ -1,5 +1,5 @@
 import React from "react";
-import { ActiveTab } from "../types";
+import { ActiveTab, getDesignationInfo } from "../types";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { GaneshaIcon, ShivajiMaharajIcon } from "./FestiveIcons";
@@ -162,11 +162,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="font-bold text-xs text-white truncate">
                 {user?.name}
               </div>
-              <div className="text-[10px] text-amber-300 flex items-center space-x-1">
-                <span>+91 {user?.mobile}</span>
-                <span>•</span>
-                <span className="capitalize">
-                  {user?.role === "admin" ? "अध्यक्ष" : "कार्यकर्ता"}
+              <div className="text-[10px] text-amber-300 flex items-center space-x-1 font-semibold">
+                <span>{getDesignationInfo(user).icon}</span>
+                <span>{getDesignationInfo(user).label}</span>
+                <span className="text-amber-500">•</span>
+                <span className="font-mono text-[9px] text-stone-400">
+                  +{user?.mobile}
                 </span>
               </div>
             </div>

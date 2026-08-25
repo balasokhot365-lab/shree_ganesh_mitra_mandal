@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { GaneshaIcon, ShivajiMaharajIcon } from "./FestiveIcons";
 import { Menu, Globe, LogOut, Shield, Wifi, UserCheck } from "lucide-react";
+import { getDesignationInfo } from "../types";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -11,6 +12,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { user, logout, isAdmin } = useAuth();
   const { language, setLanguage, t } = useLanguage();
+  const designationInfo = getDesignationInfo(user);
 
   return (
     <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-amber-200/80 shadow-xs px-4 sm:px-6 py-2.5 flex items-center justify-between">
@@ -69,16 +71,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           </button>
         </div>
 
-        {/* User Role Badge */}
+        {/* User Role & Designation (पद) Badge */}
         {user && (
-          <div className="hidden sm:flex items-center space-x-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl text-xs">
-            <UserCheck className="w-3.5 h-3.5 text-amber-700" />
+          <div className="flex items-center space-x-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300/80 px-2.5 sm:px-3 py-1 rounded-xl text-xs shadow-xs">
+            <span className="text-sm shrink-0">{designationInfo.icon}</span>
             <div className="text-left">
-              <span className="font-bold text-stone-900 block leading-tight text-[11px] truncate max-w-[120px]">
+              <span className="font-bold text-stone-900 block leading-tight text-[11px] truncate max-w-[100px] sm:max-w-[130px]">
                 {user.name}
               </span>
-              <span className="text-[9px] text-amber-800 font-extrabold uppercase block">
-                {user.role === "admin" ? "👑 अध्यक्ष (Admin)" : "👤 कार्यकर्ता"}
+              <span className="text-[9px] text-amber-900 font-black block leading-none">
+                {designationInfo.label}
               </span>
             </div>
           </div>

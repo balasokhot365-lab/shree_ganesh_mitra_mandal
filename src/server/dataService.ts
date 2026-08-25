@@ -7,6 +7,7 @@ export interface IUser {
   mobile: string;
   password: string;
   role: "admin" | "karyakarta";
+  designation?: string; // पद / भूमिका (उदा. मुख्य अध्यक्ष, अध्यक्ष, उपाध्यक्ष, सचिव, सहसचिव, खजिनदार, सहखजिनदार, सल्लागार, कार्यकर्ता, किंवा सानुकूल)
   isMainAdmin: boolean;
   canUpdateReceiptStatus?: boolean;
   canManageExpenses: boolean;
@@ -90,8 +91,8 @@ export function getMandalConfig() {
     mandalId: process.env.MANDAL_ID || "ganesh-mitra-mandal",
     mandalName: process.env.MANDAL_NAME || "श्री गणेश मित्र मंडळ",
     mandalPrefix: process.env.MANDAL_PREFIX || "GMM",
-    mandalRegNo: process.env.MANDAL_REG_NO || "धर्मादाय आयुक्तांकडील नोंदणी क्रमांक - महाराष्ट्र / 15416 / सातारा",
-    mandalLocation: process.env.MANDAL_LOCATION || "पद्मावती मळा, शिरसवडी , सातारा",
+    mandalRegNo: process.env.MANDAL_REG_NO || "महा./१८५/२०२३",
+    mandalLocation: process.env.MANDAL_LOCATION || "पद्मावाडी मळा, शिरसवाडी, सातारा",
     mainAdminName: process.env.MAIN_ADMIN_NAME || "उद्धव इंगळे",
     mainAdminMobile: process.env.MAIN_ADMIN_MOBILE || "8275658844",
     mainAdminPassword: process.env.MAIN_ADMIN_PASSWORD || "Akash@#ganpati55_39",
@@ -126,10 +127,11 @@ function sanitizeForFirestore(obj: any) {
 export function getDefaultMainAdmin(): IUser {
   const config = getMandalConfig();
   return {
-    name: `${config.mainAdminName} (मुख्य अध्यक्ष)`,
+    name: `${config.mainAdminName}`,
     mobile: config.mainAdminMobile,
     password: config.mainAdminPassword,
     role: "admin",
+    designation: "मुख्य अध्यक्ष",
     isMainAdmin: true,
     canUpdateReceiptStatus: true,
     canManageExpenses: true,
@@ -944,7 +946,9 @@ export async function getDashboardStats() {
     memberPerformanceMap.set(u._id || u.mobile, {
       userId: u._id || u.mobile,
       userName: u.name,
-      userRole: u.role,
+      userRole:
+        u.designation ||
+        (u.isMainAdmin ? "मुख्य अध्यक्ष" : u.role === "admin" ? "अध्यक्ष" : "कार्यकर्ता"),
       receiptsCount: 0,
       paidAmount: 0,
       unpaidAmount: 0,
