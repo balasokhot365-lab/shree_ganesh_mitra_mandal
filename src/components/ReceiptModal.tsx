@@ -190,7 +190,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       // Reuses the pre-generated PDF if it's ready; otherwise awaits the
       // same in-flight generation (never starts a second, competing one).
       const { blob, canvas } = await getReceiptPdf();
-      const fileName = `Ekdant_Receipt_${receipt.receiptNo}.pdf`;
+      const fileName = `ganesh-mitra-mandal_${receipt.receiptNo}.pdf`;
 
       const formattedDate = receipt.createdAt
         ? new Date(receipt.createdAt).toLocaleDateString("en-IN", {
@@ -347,7 +347,7 @@ _श्री बाल गणेश मंडळ, उचगाव (नोंद
     setExportType("pdf");
     try {
       const { blob } = await getReceiptPdf();
-      const fileName = `Ekdant_Receipt_${receipt.receiptNo}.pdf`;
+      const fileName = `ganesh-mitra-mandal_${receipt.receiptNo}.pdf`;
       const link = document.createElement("a");
       link.download = fileName;
       link.href = URL.createObjectURL(blob);
