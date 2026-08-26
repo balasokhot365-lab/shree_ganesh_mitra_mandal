@@ -6,6 +6,7 @@ import { Navbar } from "./components/Navbar";
 import { Sidebar } from "./components/Sidebar";
 import { LoginPage } from "./components/LoginPage";
 import { Dashboard } from "./components/Dashboard";
+import { AllReceipts } from "./components/AllReceipts";
 import { ReceiptForm } from "./components/ReceiptForm";
 import { UnpaidReceipts } from "./components/UnpaidReceipts";
 import { ExpenseManager } from "./components/ExpenseManager";
@@ -53,6 +54,9 @@ const MainLayout: React.FC = () => {
             <Dashboard setActiveTab={setActiveTab} />
           )}
           {activeTab === "new_receipt" && <ReceiptForm />}
+          {activeTab === "all_receipts" && (
+            <AllReceipts setActiveTab={setActiveTab} />
+          )}
           {activeTab === "unpaid_receipts" && <UnpaidReceipts />}
           {activeTab === "expense_manager" && <ExpenseManager />}
           {activeTab === "members_performance" && <MemberPerformance />}

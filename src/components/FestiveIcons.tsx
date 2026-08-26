@@ -419,7 +419,7 @@ export const MandalSeal: React.FC<{ size?: number; className?: string }> = ({
         style={{ color: "#991B1B" }}
         className="text-[5.5px] font-medium leading-none mt-0.5"
       >
-        रजि. १८५/२०२४
+        रजि. १५४१६/२००३
       </span>
     </div>
   );

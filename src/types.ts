@@ -182,6 +182,7 @@ export interface IDashboardStats {
 export type ActiveTab = 
   | "dashboard"
   | "new_receipt"
+  | "all_receipts"
   | "unpaid_receipts"
   | "expense_manager"
   | "members_performance"

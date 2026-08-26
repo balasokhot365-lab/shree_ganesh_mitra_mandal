@@ -6,6 +6,7 @@ import { GaneshaIcon, ShivajiMaharajIcon } from "./FestiveIcons";
 import {
   LayoutDashboard,
   FilePlus,
+  Receipt,
   Clock,
   TrendingDown,
   Users,
@@ -48,6 +49,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: t.menuNewReceipt,
       icon: <FilePlus className="w-4 h-4 text-amber-400" />,
       badge: "New",
+    },
+    {
+      id: "all_receipts",
+      label: t.menuAllReceipts,
+      icon: <Receipt className="w-4 h-4 text-amber-300" />,
     },
     {
       id: "unpaid_receipts",

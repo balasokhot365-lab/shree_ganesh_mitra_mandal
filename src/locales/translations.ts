@@ -13,6 +13,7 @@ export const translations = {
     // Sidebar Menus
     menuDashboard: "मुख्य डॅशबोर्ड",
     menuNewReceipt: "नवीन पावती तयार करा",
+    menuAllReceipts: "सर्व पावत्या (All Receipts)",
     menuUnpaidReceipts: "अपूर्ण / येणे पावत्या",
     menuExpenseManager: "खर्च व्यवस्थापक",
     menuMembers: "सदस्य व कामगिरी",
@@ -142,6 +143,7 @@ export const translations = {
     // Sidebar Menus
     menuDashboard: "Main Dashboard",
     menuNewReceipt: "New Add Receipt",
+    menuAllReceipts: "All Receipts",
     menuUnpaidReceipts: "Unpaid Receipts",
     menuExpenseManager: "Expense Manager",
     menuMembers: "Member & Performance",
